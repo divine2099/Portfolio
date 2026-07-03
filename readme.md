@@ -1,4 +1,4 @@
-I am a smart contract security auditor and I have builit an ai framework that eneables people to quickly find vulnerabilities in their systems
+I am a smart contract security auditor and I have builit an ai framework that enables people to quickly find vulnerabilities in their web3 systems
 
 The below are some projects I have worked on with their findings
 
