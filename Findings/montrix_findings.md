@@ -1,5 +1,4 @@
 # Findings Report — Monetrix Protocol
-Here are the findings in audit
 
 ## Trust model — actors and entry points
 
@@ -36,7 +35,7 @@ Every other state-mutating function gates on `onlyOperator`, `onlyGovernor`, `on
 
 These vectors can be reached via the public entry points listed above without requiring any role. Each one is traced backward from the unsafe primitive to confirm reachability.
 
-### EX1 — Pending-redemption USDM occupies TVL cap (Model 8 / Model 9 coupling)
+### EX1 — Pending-redemption USDM occupies TVL cap
 
 **Sink:** `MonetrixVault.deposit` L176 — `require(usdm.totalSupply() + amount <= maxTVL)`.
 
@@ -50,11 +49,11 @@ These vectors can be reached via the public entry points listed above without re
 
 **Cost:** attacker's USDM is locked in Vault for the cooldown window. After cooldown they can claim it back, paying only gas + opportunity cost for the locked duration. They can recycle: deposit → request → claim → deposit → request to keep TVL saturated.
 
-**Severity: MEDIUM** — DoS on issuance, no theft. Mitigation requires `maxTVL` increase (24h GOVERNOR action) or accepting that pending redemptions count toward cap. Documented in `statespace/08_primary_issuance.md` AV1.
+**Severity: MEDIUM** — DoS on issuance, no theft. Mitigation requires `maxTVL` increase (24h GOVERNOR action) or accepting that pending redemptions count toward cap.
 
 ---
 
-### EX2 — sUSDM front-run yield injection (Model 7 / Model 15)
+### EX2 — sUSDM front-run yield injection
 
 **Sink:** `sUSDM.injectYield(amount)` — increases `totalAssets` without minting shares; rate ratio rises proportionally to the depositor's `shares / totalSupply`.
 
@@ -72,7 +71,7 @@ These vectors can be reached via the public entry points listed above without re
 
 ---
 
-### EX3 — sUSDM donation inflation attack (Model 7 first-depositor)
+### EX3 — sUSDM donation inflation attack
 
 **Sink:** ERC4626 share/asset rounding at first deposit when `totalSupply == 0`.
 
@@ -89,7 +88,7 @@ These vectors can be reached via the public entry points listed above without re
 
 ---
 
-### EX4 — Permissionless `InsuranceFund.deposit` griefing (Model 16)
+### EX4 — Permissionless `InsuranceFund.deposit` griefing
 
 **Sink:** `InsuranceFund.deposit(uint256)` — permissionless, no role check, no cap.
 
@@ -105,7 +104,7 @@ These vectors can be reached via the public entry points listed above without re
 
 ---
 
-### EX5 — Counter inflation via direct ERC20 transfer (Model 16)
+### EX5 — Counter inflation via direct ERC20 transfer
 
 **Sink:** `usdc.transfer(InsuranceFund, X)` — bypasses `deposit()` entirely.
 
@@ -122,7 +121,7 @@ These vectors can be reached via the public entry points listed above without re
 
 ---
 
-### EX6 — Pending-USDM lockup via `setRedeemEscrow` migration race (Model 9)
+### EX6 — Pending-USDM lockup via `setRedeemEscrow` migration race
 
 **Sink:** Existing pending claims hit the new escrow which has zero balance + zero `totalOwed`.
 
@@ -146,13 +145,13 @@ These vectors can be reached via the public entry points listed above without re
 2. Both targets are **assumed non-callback** (USDC = Circle USDC = no hooks; CoreWriter = HL system contract).
 3. **For an external attacker:** none of these functions is reachable without OPERATOR.
 
-**Conclusion:** Currently **NOT externally exploitable** — but the architectural assumption is structural, not enforced. If HL upgrades CoreWriter to a callback-capable contract, operator paths become reentrancy surfaces. Documented as latent risk in Models 5, 10, 11, 12.
+**Conclusion:** Currently **NOT externally exploitable** — but the architectural assumption is structural, not enforced. If HL upgrades CoreWriter to a callback-capable contract, operator paths become reentrancy surfaces. Documented as a latent risk across the operator-side call paths.
 
 **Severity: NOT EXPLOITABLE TODAY** — listed for completeness; downgrade to **CR-12** pending HL behavior.
 
 ---
 
-### EX8 — `claimRedeem` cross-contract call chain (Model 9)
+### EX8 — `claimRedeem` cross-contract call chain
 
 **Sink:** `claimRedeem` → `usdm.burn` → USDM `_update` → `RedeemEscrow.payOut` → `usdc.safeTransfer`.
 
@@ -162,19 +161,19 @@ These vectors can be reached via the public entry points listed above without re
 3. External calls: `usdm.burn(amount)` — USDM token has no callback; `_update whenNotPaused` is pure storage. No reentry path.
 4. Then `escrow.payOut(msg.sender, amount)` → escrow internally calls `usdc.safeTransfer(recipient, amount)`. USDC is Circle USDC — no callback. No reentry path.
 
-**Conclusion:** **NOT exploitable.** CEI ordering + `nonReentrant` + non-callback ERC20 close the surface. Documented Model 9 statespace S2.
+**Conclusion:** **NOT exploitable.** CEI ordering + `nonReentrant` + non-callback ERC20 close the surface.
 
 ---
 
-### EX9 — Empty-vault yield reroute bypass (Model 7 / Model 15) — PREVENTED
+### EX9 — Empty-vault yield reroute bypass — PREVENTED
 
 **Sink:** `sUSDM.injectYield` reverts on `totalSupply == 0`; without protection, accumulated yield in YieldEscrow would distribute to a single 1-wei staker.
 
 **Status:** explicitly mitigated at two layers:
-1. `Vault.distributeYield` (Model 15) reroutes `userShare → 0` and adds it to `foundationShare` when `susdm.totalSupply() == 0`.
+1. `Vault.distributeYield` reroutes `userShare → 0` and adds it to `foundationShare` when `susdm.totalSupply() == 0`.
 2. `sUSDM.injectYield` itself reverts if `totalSupply() > 0` is false.
 
-**Reachability:** No — symmetric defense closes the inflation attack vector. Confirmed Model 15 statespace AV6.
+**Reachability:** No — symmetric defense closes the inflation attack vector.
 
 ---
 
@@ -284,7 +283,7 @@ Donation inflation against new depositors (see EX3) is realisable without flash 
 2. Attacker can sandwich with a `deposit(largeAmount)` before to inflate totalSupply slightly, reducing surplus. **But this hurts the protocol, not the attacker** (they pay USDC for USDM at 1:1, no gain).
 3. The reverse direction (deposit before to enable bigger yield) doesn't help: more deposit ≠ more surplus, since deposit adds 1 USDC backing per 1 USDM minted (net surplus contribution = 0).
 
-**Conclusion:** No flash-loan-extractable value via settlement gates from the public surface. Documented in `statespace/14_yield_settlement.md`.
+**Conclusion:** No flash-loan-extractable value via settlement gates from the public surface.
 
 ### FL3 — Backing pollution via USDC donation to Vault
 
@@ -339,7 +338,7 @@ The protocol reads three categories of external prices, all from HyperCore preco
 - The operator's settle would either succeed (with skewed yield) or revert (gate 3 fails). In either case, the attacker has no path to receive the yield.
 - The yield, if declared, flows to sUSDM stakers (not the attacker, unless they staked) and to insurance/foundation addresses.
 
-**The oracle DoS surface** is real (zero-price reverts halt yield pipeline — see `statespace/04_hypercore_reads.md` AV1) but not externally exploitable for theft.
+**The oracle DoS surface** is real (zero-price reverts halt yield pipeline) but not externally exploitable for theft.
 
 **Severity: NOT EXTERNALLY EXPLOITABLE** for theft. **Liveness impact** (yield pipeline DoS) requires HL-level oracle outage, outside protocol's control.
 
@@ -352,7 +351,7 @@ The protocol reads three categories of external prices, all from HyperCore preco
 2. **From the public surface:** there is no path that pays the attacker based on inflated backing. `Vault.deposit` is 1:1. `claimRedeem` pays from `RedeemEscrow` not from backing total. sUSDM yield distribution flows to existing stakers proportionally.
 3. To extract value, the attacker would need to be a sUSDM staker before the inflated `settle`, which is an OPERATOR action. Then the inflated yield gets distributed to all stakers including the attacker — but only proportional to their stake.
 
-**Conclusion:** Possible value extraction via sUSDM front-running combined with HLP NAV inflation is **bounded by the attacker's pre-existing sUSDM stake**. To meaningfully profit they must hold a large fraction of sUSDM, in which case they're a major LP, and the attack cost (manipulating HLP) likely exceeds the gain. Documented in `properties/04_hypercore_reads.md` E3.
+**Conclusion:** Possible value extraction via sUSDM front-running combined with HLP NAV inflation is **bounded by the attacker's pre-existing sUSDM stake**. To meaningfully profit they must hold a large fraction of sUSDM, in which case they're a major LP, and the attack cost (manipulating HLP) likely exceeds the gain.
 
 **Severity: LOW** — high attack cost, bounded payoff.
 
@@ -366,7 +365,7 @@ The protocol reads three categories of external prices, all from HyperCore preco
 3. Even after whitelist, the early-return `if (bal.total == 0) return 0` in `PrecompileReader.spotNotionalUsdcFromPerp` means the DoS triggers only if the Vault holds the token. Holdings come from `executeHedge` / `supplyToBlp` (operator-only).
 4. **External attacker cannot induce the protocol to hold a malicious token without GOVERNOR + OPERATOR cooperation.**
 
-**Conclusion:** DoS surface exists but **gated entirely by privileged actions**. Not externally reachable. Documented `statespace/03_precision.md` AV1, `statespace/04_hypercore_reads.md` AV2.
+**Conclusion:** DoS surface exists but **gated entirely by privileged actions**. Not externally reachable.
 
 **Severity: NOT EXTERNALLY EXPLOITABLE** — listed as **CR-3** (config risk).
 
@@ -386,23 +385,23 @@ The **liveness risk** from oracle outages (zero-price revert halts yield pipelin
 
 These vectors are **not externally exploitable** because every reachable path requires a role grant. They are documented as configuration / governance risks for completeness.
 
-### CR-1 — `setMaxTVL(0)` silently uncaps deposits (Model 2, GOVERNOR)
+### CR-1 — `setMaxTVL(0)` silently uncaps deposits (GOVERNOR)
 
 `MonetrixConfig.setMaxTVL` accepts 0; `Vault.deposit` interprets `maxTVL == 0` as "uncapped". A single GOVERNOR call (24h timelock) removes the TVL cap entirely with no separate "disabled" flag.
 
-### CR-2 — `setYieldBps(0, 0)` routes 100% yield to foundation (Model 2/15, GOVERNOR)
+### CR-2 — `setYieldBps(0, 0)` routes 100% yield to foundation (GOVERNOR)
 
 GOVERNOR can zero both `userYieldBps` and `insuranceYieldBps`, sending all yield to `foundation`. Combined with `setFoundation(attackerAddr)` (also GOVERNOR), this is a yield-diversion attack with 24h delay.
 
-### CR-3 — Adversarial token whitelist halts yield pipeline (Models 2/3/4, GOVERNOR)
+### CR-3 — Adversarial token whitelist halts yield pipeline (GOVERNOR)
 
 GOVERNOR-whitelisted token with `weiDecimals - szDecimals > 77` causes `TokenMath.spotNotionalUsdcFromPerpPx` to revert via `10**N` overflow. Once Vault holds any balance, every backing read reverts → settle/distribute halted. Recovery requires `removeTradeableAsset` (24h).
 
-### CR-4 — `removeTradeableAsset` orphans open hedge positions (Model 2, GOVERNOR)
+### CR-4 — `removeTradeableAsset` orphans open hedge positions (GOVERNOR)
 
 If GOVERNOR removes a perp from whitelist while Vault holds an open hedge, `closeHedge`/`repairHedge` revert (whitelist check fails). Recovery: re-add (24h) or `emergencyRawAction` (24h).
 
-### CR-5 — `emergencyRawAction(bytes)` complete L1 fund drain (Model 17, GOVERNOR — **CRITICAL**)
+### CR-5 — `emergencyRawAction(bytes)` complete L1 fund drain (GOVERNOR — **CRITICAL**)
 
 ```
 Vault.emergencyRawAction(data) onlyGovernor
@@ -411,79 +410,79 @@ Vault.emergencyRawAction(data) onlyGovernor
 
 **No validation. No size cap. No type check. Bypasses both pause flags. Bypasses `requireWired`.** Can dispatch any L1 action including full USDC withdrawal from Vault's L1 account. **24h timelock is the only protection.** This is the single highest-trust function in the protocol. Mitigation depends on multi-sig governor + community monitoring of timelock queue.
 
-### CR-6 — Permanent freeze via GUARDIAN compromise (Model 17, GUARDIAN — **CRITICAL**)
+### CR-6 — Permanent freeze via GUARDIAN compromise (GUARDIAN — **CRITICAL**)
 
 GUARDIAN can set all four pause flags (`Vault._paused`, `Vault.operatorPaused`, `USDM._paused`, `sUSDM._paused`) instantly with no timelock. There is no auto-resume, no governor override of guardian-set pauses. In NUCLEAR state users cannot exit (`claimRedeem` blocked); the only recovery is UPGRADER (48h) or GUARDIAN cooperation.
 
-### CR-7 — USDM pause as single-flag near-total kill (Model 6/17, GUARDIAN — **HIGH**)
+### CR-7 — USDM pause as single-flag near-total kill (GUARDIAN — **HIGH**)
 
 `USDM.pause()` alone blocks: `deposit` (mint), `claimRedeem` (burn), `distributeYield` (mint), and all peer-to-peer USDM transfers. Vault is technically still unpaused but no user-facing flow can complete. A single GUARDIAN call (instant) creates this state.
 
-### CR-8 — `setVault` one-time misconfiguration (Models 6/7, GOVERNOR)
+### CR-8 — `setVault` one-time misconfiguration (GOVERNOR)
 
 `USDM.setVault(addr)` and `sUSDM.setVault(addr)` are one-time, irreversible. Setting to a wrong address (e.g., EOA) gives that address mint authority on USDM (catastrophic) or yield-injection on sUSDM. Recovery requires UPGRADER (48h) + reinitializer.
 
-### CR-9 — `setRedeemEscrow` / `setYieldEscrow` migration hazard (Models 9/15, GOVERNOR — **HIGH**)
+### CR-9 — `setRedeemEscrow` / `setYieldEscrow` migration hazard (GOVERNOR — **HIGH**)
 
-Neither setter has a `balance == 0` precondition. Swapping while old escrow holds USDC orphans those funds. Pending redemption claims would hit the new (empty) escrow — **all pending claims revert** until manual migration. Documented as identical pattern in two models.
+Neither setter has a `balance == 0` precondition. Swapping while old escrow holds USDC orphans those funds. Pending redemption claims would hit the new (empty) escrow — **all pending claims revert** until manual migration. The same pattern applies to both escrow setters.
 
-### CR-10 — `setEscrow` malicious binding drain (Model 7, GOVERNOR — **HIGH**)
+### CR-10 — `setEscrow` malicious binding drain (GOVERNOR — **HIGH**)
 
 `sUSDM.setEscrow(addr)` is one-time, validates `addr.sUSDM() == this` and `addr.usdm() == asset()` — but a malicious contract can spoof these getters. Once bound, sUSDM grants `forceApprove(escrow, type(uint256).max)`. Malicious escrow then calls `usdm.transferFrom(sUSDM, attacker, max)` to drain all sUSDM USDM. **One-time semantics mean post-binding, the only recovery is UPGRADER (48h).**
 
-### CR-11 — `setMultisigVault` capture (Model 10, GOVERNOR)
+### CR-11 — `setMultisigVault` capture (GOVERNOR)
 
 `Vault.setMultisigVault(addr) + setMultisigVaultEnabled(true)` (2× 24h timelock) routes `keeperBridge(BridgeTarget.Multisig)` USDC to the configured multisig address. If GOVERNOR is compromised and routes to attacker-controlled L1 account, future bridges flow to the attacker.
 
-### CR-12 — CoreWriter callback assumption (Models 5/10/11/12, architectural)
+### CR-12 — CoreWriter callback assumption (architectural)
 
 If HyperCore's CoreWriter (`0x3333...3333`) ever upgrades to support callbacks, all operator-side functions (no `nonReentrant`) become reentrancy-vulnerable. The protocol architecturally assumes CoreWriter is non-callback; this is **not enforced on-chain**. Mitigation requires Vault upgrade (48h UPGRADER) to add `nonReentrant` modifiers to operator paths.
 
-### CR-13 — Three-model registry-asymmetry settlement DoS (Models 11/12/13/14, OPERATOR-triggerable — **HIGH**)
+### CR-13 — Registry-asymmetry settlement DoS (OPERATOR-triggerable — **HIGH**)
 
 Operator action triggers but no compromise required. `closeHedge` and `withdrawFromBlp` do **not** call `Accountant.removeSuppliedEntry`. After a full close/withdraw, the registry entry persists. If HL deactivates the 0x811 slot, every subsequent `_readL1Backing` reverts via strict-read semantics — the entire yield pipeline (`settle`, `distributeYield`, `bridgeYieldFromL1`) halts. Recovery requires OPERATOR to call `removeSuppliedEntry(...)` for each stale entry. **This is the most operationally dangerous non-malicious failure mode in the protocol.**
 
-### CR-14 — `outstandingL1Principal` counter drift (Model 10, structural)
+### CR-14 — `outstandingL1Principal` counter drift (structural)
 
 The counter is not synchronized with L1 reality. L1 events that consume USDC (hedge use, BLP supply, liquidation) do not decrement it. After enough drift, `bridgePrincipalFromL1` may have an `amount <= outstandingL1Principal` cap that exceeds actual L1 balance — `_sendL1Bridge` would then revert at the L1 sufficiency check.
 
-### CR-15 — Silent L1 wire-format mismatch (Model 5, structural)
+### CR-15 — Silent L1 wire-format mismatch (structural)
 
 `ACTION_VERSION = 1` is hardcoded. If HL bumps wire format to v2, every dispatched L1 action is silently dropped on L1: EVM transaction succeeds, events emitted, counters decremented, but USDC never arrives. **No on-chain detection mechanism exists.** Recovery requires UPGRADER (48h) to update the constant.
 
-### CR-16 — `coreDepositWallet` immutable post-init (Model 10, structural)
+### CR-16 — `coreDepositWallet` immutable post-init (structural)
 
 No setter exists for `coreDepositWallet`. If HL bridge endpoint changes, every `keeperBridge` call dispatches to a stale address. Recovery requires UPGRADER (48h) replacement of Vault implementation.
 
-### CR-17 — `__Governed_init` ACL hot-swap via reinitializer (Model 1, UPGRADER — **CRITICAL**)
+### CR-17 — `__Governed_init` ACL hot-swap via reinitializer (UPGRADER — **CRITICAL**)
 
 `MonetrixGovernedUpgradeable.__Governed_init` carries `onlyInitializing`, allowing call from `reinitializer(n)` for any future `n`. A malicious UPGRADER (48h) can deploy an implementation with a reinitializer that points `acl` to an attacker ACL contract — every subsequent role check authenticates against the malicious registry, bypassing all role gates simultaneously.
 
-### CR-18 — DEFAULT_ADMIN_ROLE renunciation deadlock (Model 1, structural)
+### CR-18 — DEFAULT_ADMIN_ROLE renunciation deadlock (structural)
 
-Bootstrap renunciation is procedural. If deployer renounces DEFAULT_ADMIN_ROLE on the ACL before timelock holds it, no further role grants/revokes are possible — the protocol enters DS4 (permanent configuration freeze). No on-chain recovery exists.
+Bootstrap renunciation is procedural. If deployer renounces DEFAULT_ADMIN_ROLE on the ACL before timelock holds it, no further role grants/revokes are possible — the protocol enters permanent configuration freeze. No on-chain recovery exists.
 
-### CR-19 — Insurance Fund drain (Model 16, GOVERNOR)
+### CR-19 — Insurance Fund drain (GOVERNOR)
 
 `InsuranceFund.withdraw(to, amount, reason)` has no per-call cap, no rate limit, no recipient whitelist. A single GOVERNOR tx (24h timelock) can drain the entire reserve.
 
-### CR-20 — `emergencyBridgePrincipalFromL1` exceeds redemption cap (Model 10/17, GOVERNOR)
+### CR-20 — `emergencyBridgePrincipalFromL1` exceeds redemption cap (GOVERNOR)
 
 The emergency path bounds amount only by `outstandingL1Principal` — **does not cap by `redemptionShortfall`**. Governor can pull back the entire outstanding principal even when redemption shortfall is zero, leaving L1 unable to fund hedges. Bypasses both pause flags. Emits the same `PrincipalBridgedFromL1` event as the operator path — emergency vs normal indistinguishable to off-chain observers.
 
-### CR-21 — `setHlpDepositEnabled` instant operator toggle (Model 12, OPERATOR)
+### CR-21 — `setHlpDepositEnabled` instant operator toggle (OPERATOR)
 
 `Vault.setHlpDepositEnabled(bool)` is OPERATOR-callable with **no timelock**. Compromised operator can freeze HLP deposits instantly. Reversible by same operator, so impact is bounded by `pauseOperator` (GUARDIAN, instant).
 
-### CR-22 — `withdrawFromBlp(token, 0)` "max withdraw" trap (Models 5/12, OPERATOR)
+### CR-22 — `withdrawFromBlp(token, 0)` "max withdraw" trap (OPERATOR)
 
 `l1Amount = 0` is HL's "withdraw max" sentinel. `Vault.withdrawFromBlp` does **not** validate `l1Amount > 0`. Operator passing 0 (intending "skip" or "no-op") drains the entire BLP position for that token. Same trap inherits from `ActionEncoder.sendWithdrawSupply`.
 
-### CR-23 — `notifyVaultSupply` / `removeSuppliedEntry` no-timelock (Model 13, OPERATOR)
+### CR-23 — `notifyVaultSupply` / `removeSuppliedEntry` no-timelock (OPERATOR)
 
 `removeSuppliedEntry` is operator-callable with no timelock. Compromised operator can drain the registry, inflating `distributableSurplus` (since the supplied notionals no longer count against… wait, removed entries reduce backing, lowering surplus). Verified: removal can only **reduce** measured backing — no drain vector. No malicious-removal advantage.
 
-### CR-24 — `setConfig` mutable hot-swap on sUSDM/Accountant (Models 7/13, GOVERNOR)
+### CR-24 — `setConfig` mutable hot-swap on sUSDM/Accountant (GOVERNOR)
 
 Unlike `setVault`/`setEscrow` (one-time), `sUSDM.setConfig` and `Accountant.setConfig` are repeatedly mutable. Hot-swapping config mid-operation can change `unstakeCooldown`, `maxYieldPerInjection`, `redeemEscrow`, `tradeableAssets[]` — affecting in-flight calls and downstream invariants. 24h timelock; emits no event on `sUSDM.setConfig`.
 
@@ -498,7 +497,7 @@ Combining external exploitability with severity:
 | 1 | CR-5 | CRITICAL | No (GOVERNOR + 24h) | Multisig governor | `emergencyRawAction` complete L1 drain |
 | 2 | CR-6 | CRITICAL | No (GUARDIAN, instant) | Multisig guardian | Permanent freeze via NUCLEAR pause |
 | 3 | CR-17 | CRITICAL | No (UPGRADER + 48h) | Multisig upgrader | ACL hot-swap via reinitializer |
-| 4 | CR-13 | HIGH | OPERATOR-triggerable as side-effect | Off-chain operator monitoring | Three-model registry asymmetry → settlement DoS |
+| 4 | CR-13 | HIGH | OPERATOR-triggerable as side-effect | Off-chain operator monitoring | Registry asymmetry → settlement DoS |
 | 5 | CR-7 | HIGH | No (GUARDIAN, instant) | Guardian pause | USDM pause = near-total kill |
 | 6 | CR-9 | HIGH | No (GOVERNOR + 24h) | Governor migration discipline | Escrow setter no balance precondition |
 | 7 | CR-10 | HIGH | No (GOVERNOR + 24h) | Source-code review of escrow | Malicious escrow infinite-approval drain |
@@ -559,7 +558,7 @@ After tracing every public/permissionless entry point through every authorizatio
 
 ## Conclusion
 
-Monetrix's externally reachable attack surface is small. Of all 17 models analyzed, only five public entry points exist (`Vault.deposit`, `requestRedeem`, `claimRedeem`, the sUSDM ERC4626 surface, and `InsuranceFund.deposit`), and they are systematically protected by:
+Monetrix's externally reachable attack surface is small. Across the full contract set, only five public entry points exist (`Vault.deposit`, `requestRedeem`, `claimRedeem`, the sUSDM ERC4626 surface, and `InsuranceFund.deposit`), and they are systematically protected by:
 
 - `nonReentrant` on every public mutator
 - 1:1 fixed-rate conversions (no oracle reads)

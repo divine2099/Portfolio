@@ -1,17 +1,28 @@
-I am a smart contract security auditor and I have builit an ai framework that enables people to quickly find vulnerabilities in their web3 systems
+# Jamike Divine — Smart Contract Security Auditor
 
-The below are some projects I have worked on with their findings
+Smart contract security auditor focused on oracle and price-manipulation
+vulnerabilities in DeFi. I work across EVM (Solidity), Cosmos (Go),
+Stellar/Soroban (Rust), and Sui (Move), using a private auditing methodology
+to threat-model protocols and accelerate manual review.
 
-| Project Name | Project Type | Date | Findings |
-| ------------ | ------------ | ---- | -------- |
-| Montrix      | Hyper liquid yield layer (solidity) | 2026-04| [Findings Report](Findings/montrix_findings.md)|
-| Morpho midnight |  lending primitive (solidity) | 2026-05-2026| [Findings Report](Findings/morpho_findings.md)|
+## Competitive results
 
+High-severity findings in competitive audits:
 
-I've participated in many others but they are currently being marked or they where the ones I did when trying to perfect my system
+- **Code4rena — Olas:** `UniswapPriceOracle.validatePrice()` TWAP calculation flaw
+- **Sherlock — Current Finance:** EMA/spot oracle price-source inconsistency
 
-During the process of perfecting my framework I got some highs in some audit competions.
+## Selected findings
 
-Here are my account links
-- https://audits.sherlock.xyz/watson/eat-the-sky
-- https://code4rena.com/@white-fox02
+| Project         | Type                               | Date    | Report |
+| --------------- | ---------------------------------- | ------- | ------ |
+| Montrix         | Hyperliquid yield layer (Solidity) | 2026-04 | [Report](Findings/montrix_findings.md) |
+| Morpho Midnight | Lending primitive (Solidity)       | 2026-05 | [Report](Findings/morpho_findings.md)  |
+
+I have participated in a number of other competitive audits as well; some are
+still being judged, and others date from when I was refining my methodology.
+
+## Profiles
+
+- Code4rena: https://code4rena.com/@white-fox02
+- Sherlock: https://audits.sherlock.xyz/watson/eat-the-sky
