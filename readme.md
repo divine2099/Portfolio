@@ -1,4 +1,4 @@
-# Jamike Divine — Smart Contract Security Auditor
+# Smart Contract Security Auditor
 
 Smart contract security auditor focused on oracle and price-manipulation
 vulnerabilities in DeFi. I work across EVM (Solidity), Cosmos (Go),
