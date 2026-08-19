@@ -72,3 +72,13 @@ restaking, cross-chain messaging, perps, stablecoins, yield.
 Competitive and private audits across EVM and non-EVM chains: Sherlock, Code4rena,
 Cantina, Cyfrin/CodeHawks, HackenProof, and direct bounty work. Built the audit
 process from scratch and used it on 20+ protocols across six languages.
+
+## Beyond auditing — Polaris Omega
+
+I don't only break systems, I build them. Polaris Omega is a cross-chain market-making and
+arbitrage system I wrote in Rust, on my own, across Base, Arbitrum, Optimism and Ethereum:
+Kalman + Avellaneda-Stoikov pricing, flash-funded profit-or-revert execution, a gas-tuned
+on-chain executor, and a risk layer of circuit breakers, position limits and segregated
+inventory. Same discipline as the audits, venues pinned to their deployed commit and checked
+against live bytecode. Built and tested in simulation, private repo. Walkthrough:
+[polaris-omega.md](polaris-omega.md).

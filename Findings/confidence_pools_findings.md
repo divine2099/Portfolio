@@ -4,7 +4,7 @@
 
 ## Summary
 
-Not every audit ends with a finding, and this one is here precisely because it didn't. Confidence Pools is a Safe-Harbor staking protocol. Stakers back an on-chain agreement, and a moderator plus an external attack registry decide whether the pool SURVIVED, EXPIRED, or was CORRUPTED. I built every high-value attack chain I could assemble against it, and every one broke on a real guard. The most severe genuine issue I could stand behind was a Low. The value of this write-up is the honest negative: I looked hard, and here is exactly where each chain died. That falsification discipline, refusing to submit chains I had already proven un-assemblable, is what I want to show, not a shortfall.
+This audit ended with nothing submitted, and that's the point. Confidence Pools is a Safe-Harbor staking protocol. Stakers back an on-chain agreement, and a moderator plus an external attack registry decide whether the pool SURVIVED, EXPIRED, or was CORRUPTED. I built every high-value attack chain I could against it, and every one broke on a real guard. The worst genuine issue I could stand behind was a Low. Below is where each chain died.
 
 ## What I built and why nothing shipped
 
@@ -29,4 +29,4 @@ Maximum genuine issue: **Low** (the observation-timing bonus redirect), and even
 
 ## Status
 
-**Disciplined zero-submit.** Zero submittable findings after the scope gate; the target ships with a DESIGN.md written to pre-empt exactly this finding surface, and my independent analysis confirmed it (76 HOLDS, 1 BROKEN, 2 UNCERTAIN; the BROKEN and both UNCERTAIN each explicitly documented as intentional or excluded). My recommendation to myself was: do not submit. I record it here as a strength. The same rigor that finds a live double-spend elsewhere is what lets me say, with receipts, that here there was nothing to find.
+**Zero-submit.** Nothing submittable after the scope gate. The target ships with a DESIGN.md written to pre-empt exactly this finding surface, and my own analysis matched it (76 HOLDS, 1 BROKEN, 2 UNCERTAIN, with the BROKEN and both UNCERTAIN each documented as intentional or excluded). The call was: do not submit. The same process that catches a live bug elsewhere is what lets me say, with the receipts above, that here there was nothing to catch.

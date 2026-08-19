@@ -72,6 +72,12 @@ Private engagements, named with permission but with all findings kept under NDA,
 HackenProof (0xMarkets, Darts RWA, tokenize.it, Sui, Overlayer, Zynk) and direct
 bounty work (Notional, sBTC, Twyne, Zest, Exponent).
 
+## Beyond auditing
+
+I don't only break systems, I build them. [**Polaris Omega**](polaris-omega.md) is a
+cross-chain market-making and arbitrage system I wrote in Rust, on my own. Same habits as
+the audit work: read the source, trust the bytecode over the docs, prove it with a harness.
+
 ## Elsewhere
 
 - Résumé: [resume.md](resume.md)
