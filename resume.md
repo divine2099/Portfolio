@@ -73,12 +73,19 @@ Competitive and private audits across EVM and non-EVM chains: Sherlock, Code4ren
 Cantina, Cyfrin/CodeHawks, HackenProof, and direct bounty work. Built the audit
 process from scratch and used it on 20+ protocols across six languages.
 
-## Beyond auditing — Polaris Omega
+## Projects
 
-I don't only break systems, I build them. Polaris Omega is a cross-chain market-making and
-arbitrage system I wrote in Rust, on my own, across Base, Arbitrum, Optimism and Ethereum:
-Kalman + Avellaneda-Stoikov pricing, flash-funded profit-or-revert execution, a gas-tuned
-on-chain executor, and a risk layer of circuit breakers, position limits and segregated
-inventory. Same discipline as the audits, venues pinned to their deployed commit and checked
-against live bytecode. Built and tested in simulation, private repo. Walkthrough:
-[polaris-omega.md](polaris-omega.md).
+**Polaris Omega — cross-chain market-making / arbitrage system (Rust, solo)** — 2025–present
+
+I don't only break systems, I build them. Same discipline as the audits: venues pinned to
+their deployed commit and checked against live bytecode, every claim proven in simulation.
+Walkthrough: [systems/polaris-omega.md](systems/polaris-omega.md).
+
+- Pricing: Kalman filter + Avellaneda-Stoikov spread/inventory; a unified break-even cost
+  engine normalizing venue fees across bps / pips / Q64.96 / 18-fp.
+- Execution: flash-funded, profit-or-revert atomic arbitrage; source-verified flash-loan
+  provider hierarchy; a gas-optimized Solidity executor (Foundry, fork-tested).
+- Risk: circuit breakers (drawdown, skew, gas, lag, timeout), position / capital-tier
+  limits, segregated inventory, 2-of-2 MPC signing.
+- Scope: 21-crate Rust workspace (reth ExEx, revm, tokio, alloy) across Base, Arbitrum,
+  Optimism, and Ethereum; 272 unit tests passing; built and validated in simulation.
