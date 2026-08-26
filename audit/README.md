@@ -19,7 +19,7 @@ lost an escalation, or where I chose not to submit at all, I say so.
 |---|---|---|---|
 | [**Chainlink Payment Abstraction**](Findings/chainlink_payment_abstraction_findings.md) | Code4rena | Solidity · EVM | Two zero-role chains, an oracle-freeze DoS and a mempool-blocking monopoly, that stall settlement. A composition-level argument the model-by-model view can't see. Self-rated, unreconciled and unjudged. |
 | [**Monetrix**](Findings/montrix_findings.md) | Code4rena | Solidity · EVM (Hyperliquid) | Every public entry point traced backward through every auth gate, and a stale-registry asymmetry that permanently freezes yield settlement. |
-| [**Morpho Midnight**](Findings/morpho_findings.md) | Cantina | Solidity · EVM | Scope verification and cross-audit dedup, plus a reentrancy finding I *debunked* with my own PoC. |
+| [**Morpho Midnight**](Findings/morpho_findings.md) | Cantina | Solidity · EVM | An opcode-level DoS (High): on any non-Osaka EVM the `clz`-based bitmap math reverts, bricking every collateralized health check, all liquidations and bad-debt realization protocol-wide. Plus creator-config Highs (malicious oracle, a blocking `liquidatorGate`, isolation-crossing fee-on-transfer), and a cross-contract reentrancy I *debunked* with my own PoC. |
 | [**dreUSD**](Findings/dreusd_findings.md) | Sherlock | Solidity · EVM (Base) | In-band depeg extraction through a frozen redemption quote, plus a 48-finding reconciliation against prior Spearbit and Quantstamp audits. Submitted, ruled a duplicate, escalated. |
 | [**Confidence Pools**](Findings/confidence_pools_findings.md) | Cyfrin / CodeHawks | Solidity · EVM | A zero-submit. Every attack chain I built broke on a real guard, and I kept the ledger showing where each one died. |
 
