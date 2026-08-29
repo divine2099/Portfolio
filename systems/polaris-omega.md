@@ -10,13 +10,15 @@ real money.
 Capital sits pre-positioned on each chain and gets rebalanced synthetically, so no bridge is
 ever in the critical path. Trades are flash-funded and either turn a profit or revert, so a
 bad fill costs gas, not principal. Pricing runs on a Kalman filter with an Avellaneda-Stoikov
-spread and inventory model.
+spread and inventory model. It runs co-resident with the node as a Reth execution extension,
+with a revm-based simulator so candidate trades are priced against real state before they're
+sent.
 
 ## What's in it
 
 **Fees, made comparable.** Every venue quotes fees differently, Uniswap V4 one way, Curve
 another, Camelot in pips, some in Q64.96, some in 18-decimal fixed point. One break-even
-engine (`S_min = F + √(2·κ·(gas+priority)·1e4)`) puts them all in the same terms, so venues
+engine folds the quoted fee, gas and priority into a single minimum-edge threshold, so venues
 compare on real cost, not the headline number.
 
 **A trap the docs hide.** I pin every venue to its deployed commit and check it against the
