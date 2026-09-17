@@ -1,91 +1,61 @@
 # Jamike Divine
 
-**Smart contract security researcher across EVM and non-EVM chains. I build and run an AI-assisted audit methodology that isn't tied to any one protocol type.**
-
-[kelbottumm@gmail.com](mailto:kelbottumm@gmail.com) · Code4rena [@white-fox02](https://code4rena.com/@white-fox02) · Sherlock [@eat-the-sky](https://audits.sherlock.xyz/watson/eat-the-sky) · GitHub [@divine2099](https://github.com/divine2099)
-
----
+AI Engineer · Smart-Contract Security · Quant Systems
+Remote (based in Nigeria) · kelbottumm@gmail.com · Telegram t.me/Hatesky06 · GitHub github.com/divine2099
 
 ## Summary
 
-I audit smart contracts, and the heart of what I do is a methodology I built over the
-past year. It's an AI-assisted audit process, and it doesn't depend on the protocol
-type or the chain. I've run it across EVM, Sui, Solana, Soroban, Cosmos and Stacks, on
-everything from lending and AMMs to RWA, restaking and bridges. What sets it apart is
-that it kills its own false positives before a judge ever sees them. If anyone doubts
-it generalizes, give me a protocol and I'll show you. I want to either help a team
-build AI tooling for security review, or find bugs in production protocols.
+AI engineer who builds large, correct software solo by running a disciplined system around Claude:
+staged pipelines with hard gates, my own rules and skills, Python hooks that block bad commits,
+subagents for isolated work, and an assumptions ledger where every claim carries a way to prove it
+wrong. The same method has produced a 21-crate Rust cross-chain trading system, a 51-module Python
+quant-ML system, and a smart-contract audit pipeline that has found two Valid High vulnerabilities in
+public contests. Open to remote AI-engineering, security-research and quant roles.
 
-## What I do well
+## Skills
 
-The methodology is the main thing, and it re-targets from a single profile of the
-target, so the same process works whether it's EVM, a Solana program, a Move package
-or a ZK circuit. It runs from a threat model through per-model reading, invariant
-extraction, state-space work, chained attacks, and a scope-gated report where
-everything is backed by a PoC. It's execution-driven, so I don't trust a "no findings"
-until a harness has actually run. And it's honest about what it can't prove. I retract
-my own findings on the record.
-
-Oracle and price manipulation is one area I'm particularly strong in: TWAP and EMA
-manipulation, staleness, band and clamp math, cross-price scaling. But that's an
-example of the method at work, not the limit of it. Point it at a different kind of
-protocol and it holds.
-
-I write real PoCs in Foundry, Anchor and Go. On targets that Spearbit- and
-Quantstamp-grade firms had already audited, my process reproduced their findings on
-its own, running on a $20/month plan.
-
-## Selected findings (public contests)
-
-Full reports are in the portfolio. These are recent, and I state honestly how each was
-judged.
-
-- **Chainlink Payment Abstraction** (Code4rena, EVM). Two zero-role chains that stall
-  settlement, visible only when you compose findings across models. Self-rated,
-  unreconciled.
-- **Monetrix** (Code4rena, EVM/Hyperliquid). Full backward reachability map of every
-  public entry point, and a permanent yield-settlement freeze.
-- **Morpho Midnight** (Cantina, EVM). Scope verification and cross-audit dedup. I
-  caught a wrong mapping of my own and debunked a reentrancy finding by PoC.
-- **dreUSD** (Sherlock, EVM/Base). In-band depeg extraction, plus a 48-finding
-  reconciliation against prior Spearbit and Quantstamp audits. Submitted, ruled a
-  duplicate, escalated.
-- **Confidence Pools** (Cyfrin/CodeHawks, EVM). A zero-submit. Every chain I built
-  broke on a real guard, and I kept the ledger to show it.
-
-## Technical
-
-Languages and VMs: Solidity (EVM), Move (Sui), Rust (Solana/Anchor, Soroban), Go
-(Cosmos), Clarity (Stacks).
-
-Tooling: Foundry for PoCs and invariant/differential fuzzing, Anchor and bankrun on
-Solana, Go test harnesses on Cosmos, a self-built AI-assisted review pipeline, and
-git-based reproducible PoCs.
-
-Domains: AMMs and DEXs, lending and RWA, oracles and price providers, vaults,
-restaking, cross-chain messaging, perps, stablecoins, yield.
+AI engineering: Claude Code system design (skills, rules, hooks, subagents, staged pipelines,
+assumptions ledgers, knowledge vaults), MCP tools including arxiv, prompt-to-pipeline workflows.
+Languages: Rust, Solidity, Python, C++ (latency-critical); reading knowledge of Move, Go, Solana.
+Smart-contract security: EVM and non-EVM auditing, oracle and price-manipulation analysis, invariant
+extraction, PoC development, differential and invariant fuzzing, Foundry, Anchor.
+DeFi: Uniswap V4, Balancer V3, Curve, Aerodrome, Camelot, Aave V3, deBridge, flash loans, atomic
+arbitrage, AMM and concentrated-liquidity pricing math.
+Systems and infra: reth (ExEx, MDBX), revm, tokio, alloy, openraft, tonic/gRPC, MPC signing.
+Quant/ML: Kalman filtering, Avellaneda-Stoikov, the López de Prado stack (information bars, fractional
+differentiation, triple-barrier and meta-labeling, purged CV, CPCV, Deflated Sharpe, HRP, GBDT
+ensembles with LightGBM and CatBoost).
 
 ## Experience
 
-**Independent smart contract security researcher**
-
-Competitive and private audits across EVM and non-EVM chains: Sherlock, Code4rena,
-Cantina, Cyfrin/CodeHawks, HackenProof, and direct bounty work. Built the audit
-process from scratch and used it on 20+ protocols across six languages.
+Independent AI Engineer and Security Researcher, remote, 2024 to present
+- Build a disciplined AI system around Claude (rules, staged pipelines, skills, hooks, subagents) that
+  lets one person research, build, test and ship complex software without drift and fully documented.
+- Built a protocol-agnostic, coverage-driven smart-contract audit pipeline plus a four-gate validity
+  pass that kills weak findings before submission.
+- Found two Valid High vulnerabilities using the pipeline: an oracle that built its TWAP from spot
+  (Olas, Code4rena) and an inconsistent dual-source price feed (Current Finance, Sherlock).
+- On protocols already reviewed by firms including Spearbit and Quantstamp, the pipeline re-found their
+  bugs independently, matching in hours vulnerabilities the prior audits took up to a month to find.
+- Competed on Sherlock, Code4rena, Cantina and Cyfrin/CodeHawks, plus private engagements under NDA.
 
 ## Projects
 
-**Polaris Omega — cross-chain market-making / arbitrage system (Rust, solo)** — 2025–present
+Polaris Omega — cross-chain market-making and arbitrage system (Rust, solo), 2025 to present
+- 21-crate Rust workspace across Base, Arbitrum, Optimism and Ethereum; runs as a reth execution
+  extension with a revm simulator. 272 unit tests passing; Foundry-tested Solidity executor.
+- Kalman-filter and Avellaneda-Stoikov pricing; one break-even engine normalizing venue fees into a
+  single minimum-edge threshold; flash-funded profit-or-revert execution; circuit breakers, capital
+  tiers, segregated inventory, 2-of-2 MPC signing.
+- Built and validated in simulation with wei-exact fork sims. Not run live.
 
-I don't only break systems, I build them. Same discipline as the audits: venues pinned to
-their deployed commit and checked against live bytecode, every claim proven in simulation.
-Walkthrough: [systems/polaris-omega.md](systems/polaris-omega.md).
+model_blueprint — quant-ML trading system (Python, Rust runtime, C++ decoders)
+- 51 modules; 427 tests at 100% line and branch coverage; built on the López de Prado stack with a
+  leakage-free validation harness (purged/embargo CV, CPCV, Deflated Sharpe, PBO, PSR).
+- Honesty-harness-first design: the validation harness is built and trusted before any strategy result.
+  Code-complete and audited MVP. Not run live.
 
-- Pricing: Kalman filter + Avellaneda-Stoikov spread/inventory; a unified break-even cost
-  engine normalizing venue fees across bps / pips / Q64.96 / 18-fp.
-- Execution: flash-funded, profit-or-revert atomic arbitrage; source-verified flash-loan
-  provider hierarchy; a gas-optimized Solidity executor (Foundry, fork-tested).
-- Risk: circuit breakers (drawdown, skew, gas, lag, timeout), position / capital-tier
-  limits, segregated inventory, 2-of-2 MPC signing.
-- Scope: 21-crate Rust workspace (reth ExEx, revm, tokio, alloy) across Base, Arbitrum,
-  Optimism, and Ethereum; 272 unit tests passing; built and validated in simulation.
+## Education
+
+BSc, Biochemistry, University of Nigeria, Nsukka. Self-taught in security, systems, DeFi, quant and
+AI-assisted engineering.

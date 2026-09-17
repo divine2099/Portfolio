@@ -1,4 +1,10 @@
-# Findings Report — Monetrix Protocol
+# Findings report — Monetrix
+
+Code4rena · Solidity / EVM. Cross-model attack-vector analysis: each vulnerability traced backward from the vulnerable function through every authorization barrier to decide whether an unprivileged external caller can actually reach it. Vectors that need a role grant, timelock, or upgrade are separated as configuration risks, not externally exploitable bugs.
+
+Cross-model attack-vector analysis. Each vulnerability is traced **backward from the vulnerable function** through every authorization barrier to determine whether an unprivileged external caller can actually reach and execute the unsafe state. Vectors that require a role grant, timelock execution, or upgrade are separated as **configuration risks**, not externally exploitable vulnerabilities.
+
+---
 
 ## Trust model — actors and entry points
 
@@ -71,7 +77,7 @@ These vectors can be reached via the public entry points listed above without re
 
 ---
 
-### EX3 — sUSDM donation inflation attack
+### EX3 — sUSDM donation inflation attack (first-depositor)
 
 **Sink:** ERC4626 share/asset rounding at first deposit when `totalSupply == 0`.
 
@@ -145,7 +151,7 @@ These vectors can be reached via the public entry points listed above without re
 2. Both targets are **assumed non-callback** (USDC = Circle USDC = no hooks; CoreWriter = HL system contract).
 3. **For an external attacker:** none of these functions is reachable without OPERATOR.
 
-**Conclusion:** Currently **NOT externally exploitable** — but the architectural assumption is structural, not enforced. If HL upgrades CoreWriter to a callback-capable contract, operator paths become reentrancy surfaces. Documented as a latent risk across the operator-side call paths.
+**Conclusion:** Currently **NOT externally exploitable** — but the architectural assumption is structural, not enforced. If HL upgrades CoreWriter to a callback-capable contract, operator paths become reentrancy surfaces.
 
 **Severity: NOT EXPLOITABLE TODAY** — listed for completeness; downgrade to **CR-12** pending HL behavior.
 
@@ -275,7 +281,7 @@ Donation inflation against new depositors (see EX3) is realisable without flash 
 1. The attacker cannot directly call `settle` — gated.
 2. But they can manipulate inputs to gate-3 (`distributableSurplus`):
    - `usdm.totalSupply()` — pump or dump via deposits/redemptions in the same block as the operator's tx.
-   - `usdc.balanceOf(Vault)` — flash-loan USDC into Vault by donating, then donate-out via... wait, no out-path exists for an attacker. Donations to Vault are one-way.
+   - `usdc.balanceOf(Vault)` — flash-loan USDC into Vault by donating, but no out-path exists for an attacker to remove it. Donations to Vault are one-way.
    - L1 spot/perp oracle reads — outside the Vault's ability to manipulate atomically.
 
 **Backward trace:**
@@ -424,7 +430,7 @@ GUARDIAN can set all four pause flags (`Vault._paused`, `Vault.operatorPaused`, 
 
 ### CR-9 — `setRedeemEscrow` / `setYieldEscrow` migration hazard (GOVERNOR — **HIGH**)
 
-Neither setter has a `balance == 0` precondition. Swapping while old escrow holds USDC orphans those funds. Pending redemption claims would hit the new (empty) escrow — **all pending claims revert** until manual migration. The same pattern applies to both escrow setters.
+Neither setter has a `balance == 0` precondition. Swapping while old escrow holds USDC orphans those funds. Pending redemption claims would hit the new (empty) escrow — **all pending claims revert** until manual migration. Documented as identical pattern in two models.
 
 ### CR-10 — `setEscrow` malicious binding drain (GOVERNOR — **HIGH**)
 
@@ -438,7 +444,7 @@ Neither setter has a `balance == 0` precondition. Swapping while old escrow hold
 
 If HyperCore's CoreWriter (`0x3333...3333`) ever upgrades to support callbacks, all operator-side functions (no `nonReentrant`) become reentrancy-vulnerable. The protocol architecturally assumes CoreWriter is non-callback; this is **not enforced on-chain**. Mitigation requires Vault upgrade (48h UPGRADER) to add `nonReentrant` modifiers to operator paths.
 
-### CR-13 — Registry-asymmetry settlement DoS (OPERATOR-triggerable — **HIGH**)
+### CR-13 — Three-model registry-asymmetry settlement DoS (OPERATOR-triggerable — **HIGH**)
 
 Operator action triggers but no compromise required. `closeHedge` and `withdrawFromBlp` do **not** call `Accountant.removeSuppliedEntry`. After a full close/withdraw, the registry entry persists. If HL deactivates the 0x811 slot, every subsequent `_readL1Backing` reverts via strict-read semantics — the entire yield pipeline (`settle`, `distributeYield`, `bridgeYieldFromL1`) halts. Recovery requires OPERATOR to call `removeSuppliedEntry(...)` for each stale entry. **This is the most operationally dangerous non-malicious failure mode in the protocol.**
 
@@ -460,7 +466,7 @@ No setter exists for `coreDepositWallet`. If HL bridge endpoint changes, every `
 
 ### CR-18 — DEFAULT_ADMIN_ROLE renunciation deadlock (structural)
 
-Bootstrap renunciation is procedural. If deployer renounces DEFAULT_ADMIN_ROLE on the ACL before timelock holds it, no further role grants/revokes are possible — the protocol enters permanent configuration freeze. No on-chain recovery exists.
+Bootstrap renunciation is procedural. If deployer renounces DEFAULT_ADMIN_ROLE on the ACL before timelock holds it, no further role grants/revokes are possible — the protocol enters DS4 (permanent configuration freeze). No on-chain recovery exists.
 
 ### CR-19 — Insurance Fund drain (GOVERNOR)
 
@@ -480,7 +486,7 @@ The emergency path bounds amount only by `outstandingL1Principal` — **does not
 
 ### CR-23 — `notifyVaultSupply` / `removeSuppliedEntry` no-timelock (OPERATOR)
 
-`removeSuppliedEntry` is operator-callable with no timelock. Compromised operator can drain the registry, inflating `distributableSurplus` (since the supplied notionals no longer count against… wait, removed entries reduce backing, lowering surplus). Verified: removal can only **reduce** measured backing — no drain vector. No malicious-removal advantage.
+`removeSuppliedEntry` is operator-callable with no timelock. Compromised operator can drain the registry, attempting to inflate `distributableSurplus`. Verified: removing an entry can only **reduce** measured backing, lowering surplus, so there is no drain vector. No malicious-removal advantage.
 
 ### CR-24 — `setConfig` mutable hot-swap on sUSDM/Accountant (GOVERNOR)
 
@@ -497,7 +503,7 @@ Combining external exploitability with severity:
 | 1 | CR-5 | CRITICAL | No (GOVERNOR + 24h) | Multisig governor | `emergencyRawAction` complete L1 drain |
 | 2 | CR-6 | CRITICAL | No (GUARDIAN, instant) | Multisig guardian | Permanent freeze via NUCLEAR pause |
 | 3 | CR-17 | CRITICAL | No (UPGRADER + 48h) | Multisig upgrader | ACL hot-swap via reinitializer |
-| 4 | CR-13 | HIGH | OPERATOR-triggerable as side-effect | Off-chain operator monitoring | Registry asymmetry → settlement DoS |
+| 4 | CR-13 | HIGH | OPERATOR-triggerable as side-effect | Off-chain operator monitoring | Three-model registry asymmetry → settlement DoS |
 | 5 | CR-7 | HIGH | No (GUARDIAN, instant) | Guardian pause | USDM pause = near-total kill |
 | 6 | CR-9 | HIGH | No (GOVERNOR + 24h) | Governor migration discipline | Escrow setter no balance precondition |
 | 7 | CR-10 | HIGH | No (GOVERNOR + 24h) | Source-code review of escrow | Malicious escrow infinite-approval drain |
@@ -558,7 +564,7 @@ After tracing every public/permissionless entry point through every authorizatio
 
 ## Conclusion
 
-Monetrix's externally reachable attack surface is small. Across the full contract set, only five public entry points exist (`Vault.deposit`, `requestRedeem`, `claimRedeem`, the sUSDM ERC4626 surface, and `InsuranceFund.deposit`), and they are systematically protected by:
+Monetrix's externally reachable attack surface is small. Of all 17 models analyzed, only five public entry points exist (`Vault.deposit`, `requestRedeem`, `claimRedeem`, the sUSDM ERC4626 surface, and `InsuranceFund.deposit`), and they are systematically protected by:
 
 - `nonReentrant` on every public mutator
 - 1:1 fixed-rate conversions (no oracle reads)

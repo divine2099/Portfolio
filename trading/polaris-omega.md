@@ -63,11 +63,11 @@ I don't build autonomous agents, and I don't really trust them to run loose. Wha
 disciplined system around Claude and work inside it: my own rules, a staged pipeline (research,
 architecture, planning, build, simulation), reusable skills for each subsystem, and hooks that keep
 it in line. The gates are simple, no code without a plan, no plan without research, no claim without
-a way to check it.
+a way to check it. The full method is written up [here](../method/README.md).
 
 The spine of it is an assumptions ledger. Every claim the design leans on, a performance number, an
 API's behavior, a fee, a chain quirk, gets written down with a concrete way to prove it wrong and a
-status. 73 of them. When one turns out false it doesn't just get patched locally, it propagates back
+status. Around 69 of them. When one turns out false it doesn't just get patched locally, it propagates back
 through the architecture. Several of the stories above, the single-adapter idea, the signing timing,
 the capital buckets, are ledger entries that flipped from "assumed" to "wrong" and forced a redesign.
 That's the whole point: I'd rather find the wrong assumption myself, on my own machine, than have the
